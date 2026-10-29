@@ -1,0 +1,10 @@
+{
+    "manifest_version": 3,
+    "name": "LeetNote AI",
+    "version": "1.0.0",
+    "description": "Turn your LeetCode solutions into structured DSA notes with AI-powered insights, key algorithmic patterns, and concise approach explanations with just one click.",
+    "action": {
+        "default_popup": "index.html",
+        "default_title": "LeetNote AI"
+    }
+}
