@@ -1,1 +1,1 @@
-"# LeetNote-AI-Extension" 
+# LeetNote-AI-Extension
