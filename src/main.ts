@@ -29,7 +29,7 @@ function isLeetCodeProblemUrl(url: string | undefined): boolean {
   try {
     const { hostname, pathname } = new URL(url);
 
-    return hostname === "leetcode.com" && pathname.startsWith("/problems/");
+    return hostname === "leetcode.com" && pathname.startsWith("/problems/") && pathname.endsWith("/description/");
   }
   catch (e) {
     console.error("Failed to parse url.", e);
