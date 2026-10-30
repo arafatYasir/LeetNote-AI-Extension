@@ -1,3 +1,5 @@
+import { readEditorCode } from "./editorCode";
+import { requestProblem } from "./problem";
 import "./style.css"
 
 // Types
@@ -28,8 +30,9 @@ function isLeetCodeProblemUrl(url: string | undefined): boolean {
 
   try {
     const { hostname, pathname } = new URL(url);
+    const urlRegex = /^\/problems\/[^/]+(\/(description\/?)?)?$/;
 
-    return hostname === "leetcode.com" && pathname.startsWith("/problems/") && pathname.endsWith("/description/");
+    return hostname === "leetcode.com" && urlRegex.test(pathname);
   }
   catch (e) {
     console.error("Failed to parse url.", e);
@@ -44,17 +47,33 @@ async function getActiveTab(): Promise<chrome.tabs.Tab | undefined> {
 
 // Grab DOM elements
 const button = getElement<HTMLButtonElement>("generate-btn");
-// const result = getElement<HTMLPreElement>("result");
 
 // Click event listener on the generate button
 button.addEventListener("click", async () => {
-  const tab = await getActiveTab();
-  const isProblemUrl = isLeetCodeProblemUrl(tab?.url);
+  setStatus("Reading...", "loading");
 
-  if (isProblemUrl) {
-    setStatus(`Problem page detected: ${tab?.url}`, "success");
+  const tab = await getActiveTab();
+
+  if (!isLeetCodeProblemUrl(tab?.url) || tab?.id === undefined) {
+    setStatus("Open a LeetCode problem description page.", "error");
+    return;
   }
-  else {
-    setStatus("Open a LeetCode problem page first.", "error");
+
+  const result = await readEditorCode(tab.id);
+
+  if (result.ok === false) {
+    setStatus(result.error, "error");
+    return;
   }
+
+  const problem = await requestProblem(tab.id);
+
+  if (problem.ok === false) {
+    setStatus(problem.error, "error");
+    return;
+  }
+
+  const lineCount = result.data.code.split("\n").length;
+
+  setStatus(`Problem: ${problem.data.title}, Language: ${result.data.language}, Lines: ${lineCount}`, "success");
 });

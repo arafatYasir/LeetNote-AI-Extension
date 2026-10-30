@@ -1,8 +1,4 @@
-interface ProblemData {
-    title: string;
-    statement: string;
-    url: string;
-}
+import type { ProblemData, ProblemResult } from "./types"
 
 const TITLE_SELECTOR = 'div[role="heading"] > a';
 const STATEMENT_SELECTOR = 'div[data-track-load="description_content"]';
@@ -33,14 +29,20 @@ function waitForElement(selector: string, timeoutMs = 5000): Promise<Element | n
 }
 
 async function extractProblem(): Promise<ProblemData | null> {
-    const titleEl = await waitForElement(TITLE_SELECTOR);
-    const statementEl = await waitForElement(STATEMENT_SELECTOR);
+    const [titleEl, statementEl] = await Promise.all([
+        waitForElement(TITLE_SELECTOR),
+        waitForElement(STATEMENT_SELECTOR),
+    ]);
+
+    if (!statementEl || !(statementEl instanceof HTMLElement) || statementEl.getClientRects().length === 0) {
+        return null;
+    }
 
     // Clean problem title
     const title = (titleEl?.textContent ?? "").replace(/^\d+\.\s*/, "").trim();
 
     // Clean problem statement
-    const statement = (statementEl as HTMLElement).innerText
+    const statement = statementEl.innerText
         .replace(/\u00a0/g, " ")
         .replace(/\n{3,}/g, "\n\n")
         .trim();
@@ -50,4 +52,21 @@ async function extractProblem(): Promise<ProblemData | null> {
     return { title, statement, url: location.href };
 }
 
-extractProblem().then((data) => console.log("Extracted Problem: ", data));
+chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+    if (message?.type !== "GET_PROBLEM") return false;
+
+    extractProblem()
+        .then((data) => {
+            const result: ProblemResult = data
+                ? { ok: true, data }
+                : { ok: false, error: "Could not find the problem title or description on this page." };
+
+            sendResponse(result);
+        })
+        .catch((e) => {
+            console.error("Error extracting problem: ", e);
+            sendResponse({ ok: false, error: "Failed to extract problem details." });
+        });
+
+    return true;
+});

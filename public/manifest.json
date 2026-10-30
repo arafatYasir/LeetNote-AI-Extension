@@ -7,7 +7,7 @@
         "default_popup": "index.html",
         "default_title": "LeetNote AI"
     },
-    "permissions": ["activeTab"],
+    "permissions": ["activeTab", "scripting"],
     "content_scripts": [
         {
             "matches": ["https://leetcode.com/problems/*"],
