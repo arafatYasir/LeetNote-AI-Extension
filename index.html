@@ -8,9 +8,33 @@
   </head>
   <body>
     <h1>LeetNote AI</h1>
-    <button id="generate-btn">Generate Note</button>
+
+    <!-- Empty / Inactive View -->
+    <div id="empty-view" hidden>
+      <div class="empty-icon"></div>
+      <p class="empty-title">No Problem Detected</p>
+      <p class="empty-desc">Open a LeetCode problem description page to start generating notes.</p>
+    </div>
+
+    <!-- Active Problem View -->
+    <div id="active-view" hidden>
+      <div class="problem-card">
+        <div class="card-header">
+          <span class="route-badge">Ready</span>
+          <span id="detected-lang" class="badge"></span>
+        </div>
+        <h2 id="problem-title"></h2>
+        <div class="card-footer">
+          <span id="code-lines" class="meta-item"></span>
+        </div>
+      </div>
+
+      <button id="generate-btn">Generate Note</button>
+    </div>
+
     <p id="status"></p>
     <pre id="result" hidden></pre>
+    
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

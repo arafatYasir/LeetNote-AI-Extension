@@ -1,6 +1,8 @@
 import { readEditorCode } from "./editorCode";
 import { requestProblem } from "./problem";
-import "./style.css"
+import type { EditorCode } from "./editorCode";
+import type { ProblemData } from "./types";
+import "./style.css";
 
 // Types
 type StatusKind = "idle" | "loading" | "error" | "success";
@@ -18,7 +20,9 @@ function setStatus(message: string, kind: StatusKind) {
   const status = getElement<HTMLParagraphElement>("status");
 
   if (!message.trim()) {
-    throw new Error("Status message is not found!");
+    status.innerText = "";
+    status.removeAttribute("data-kind");
+    return;
   }
 
   status.innerText = message;
@@ -30,11 +34,9 @@ function isLeetCodeProblemUrl(url: string | undefined): boolean {
 
   try {
     const { hostname, pathname } = new URL(url);
-    const urlRegex = /^\/problems\/[^/]+(\/(description\/?)?)?$/;
 
-    return hostname === "leetcode.com" && urlRegex.test(pathname);
-  }
-  catch (e) {
+    return hostname === "leetcode.com" && /^\/problems\/[^/]+(\/(description\/?)?)?$/.test(pathname);
+  } catch (e) {
     console.error("Failed to parse url.", e);
     return false;
   }
@@ -46,34 +48,96 @@ async function getActiveTab(): Promise<chrome.tabs.Tab | undefined> {
 }
 
 // Grab DOM elements
+const emptyView = getElement<HTMLDivElement>("empty-view");
+const activeView = getElement<HTMLDivElement>("active-view");
+const problemTitle = getElement<HTMLHeadingElement>("problem-title");
+const detectedLang = getElement<HTMLSpanElement>("detected-lang");
+const codeLines = getElement<HTMLSpanElement>("code-lines");
 const button = getElement<HTMLButtonElement>("generate-btn");
+
+// State cache
+let cachedProblem: ProblemData | null = null;
+let cachedEditor: EditorCode | null = null;
+let activeTabId: number | null = null;
+
+async function initPopup() {
+  const tab = await getActiveTab();
+
+  if (!tab?.id || !isLeetCodeProblemUrl(tab?.url)) {
+    emptyView.hidden = false;
+    activeView.hidden = true;
+    return;
+  }
+
+  activeTabId = tab.id;
+  emptyView.hidden = true;
+  activeView.hidden = false;
+
+  // Initial loading state in card
+  problemTitle.innerText = "Detecting problem...";
+  detectedLang.innerText = "Detecting...";
+  codeLines.innerText = "Checking editor...";
+  button.disabled = true;
+
+  try {
+    const [problemResult, editorResult] = await Promise.all([
+      requestProblem(tab.id),
+      readEditorCode(tab.id),
+    ]);
+
+    if (problemResult.ok === false) {
+      emptyView.hidden = false;
+      activeView.hidden = true;
+      setStatus(problemResult.error, "error");
+      return;
+    }
+
+    if (editorResult.ok === false) {
+      emptyView.hidden = false;
+      activeView.hidden = true;
+      setStatus(editorResult.error, "error");
+      return;
+    }
+
+    cachedProblem = problemResult.data;
+    cachedEditor = editorResult.data;
+
+    // Dispaly all the informations
+    problemTitle.innerText = cachedProblem.title;
+    detectedLang.innerText = cachedEditor.language;
+
+    const lines = cachedEditor.code.trim() ? cachedEditor.code.split("\n").length : 0;
+    codeLines.innerText = `${lines} ${lines > 1 ? "lines" : "line"} of code`;
+
+    button.disabled = false;
+  } catch (e) {
+    emptyView.hidden = false;
+    activeView.hidden = true;
+    setStatus(`Failed to detect problem: ${String(e)}`, "error");
+  }
+}
 
 // Click event listener on the generate button
 button.addEventListener("click", async () => {
-  setStatus("Reading...", "loading");
-
-  const tab = await getActiveTab();
-
-  if (!isLeetCodeProblemUrl(tab?.url) || tab?.id === undefined) {
-    setStatus("Open a LeetCode problem description page.", "error");
+  if (!cachedProblem || !activeTabId) {
+    setStatus("Problem data not ready.", "error");
     return;
   }
 
-  const result = await readEditorCode(tab.id);
+  setStatus("Generating...", "loading");
+  button.disabled = true;
 
-  if (result.ok === false) {
-    setStatus(result.error, "error");
-    return;
+  try {
+    const lines = cachedEditor && cachedEditor.code.trim() ? cachedEditor.code.split("\n").length : 0;
+    const language = cachedEditor ? cachedEditor.language : "unknown";
+
+    setStatus(`Problem: ${cachedProblem.title}, Language: ${language}, Lines: ${lines}`, "success");
+  } catch (e) {
+    setStatus(`Error: ${String(e)}`, "error");
+  } finally {
+    button.disabled = false;
   }
-
-  const problem = await requestProblem(tab.id);
-
-  if (problem.ok === false) {
-    setStatus(problem.error, "error");
-    return;
-  }
-
-  const lineCount = result.data.code.split("\n").length;
-
-  setStatus(`Problem: ${problem.data.title}, Language: ${result.data.language}, Lines: ${lineCount}`, "success");
 });
+
+// Run popup initialization
+initPopup();
