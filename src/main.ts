@@ -99,6 +99,14 @@ async function initPopup() {
       return;
     }
 
+    // If code editor doesn't contain suitable amount of codes
+    if (editorResult.data.code.trim().length < 20) {
+      emptyView.hidden = true;
+      activeView.hidden = true;
+      setStatus("Couldn't find enough code in the editor. Write your solution first.", "error");
+      return;
+    }
+
     cachedProblem = problemResult.data;
     cachedEditor = editorResult.data;
 
