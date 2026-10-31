@@ -1,40 +1,54 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>LeetNote AI</title>
-  </head>
-  <body>
-    <h1>LeetNote AI</h1>
 
-    <!-- Empty / Inactive View -->
-    <div id="empty-view" hidden>
-      <div class="empty-icon"></div>
-      <p class="empty-title">No Problem Detected</p>
-      <p class="empty-desc">Open a LeetCode problem description page to start generating notes.</p>
-    </div>
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LeetNote AI</title>
+</head>
 
-    <!-- Active Problem View -->
-    <div id="active-view" hidden>
-      <div class="problem-card">
-        <div class="card-header">
-          <span class="route-badge">Ready</span>
-          <span id="detected-lang" class="badge"></span>
-        </div>
-        <h2 id="problem-title"></h2>
-        <div class="card-footer">
-          <span id="code-lines" class="meta-item"></span>
-        </div>
+<body>
+  <h1>LeetNote AI</h1>
+
+  <!-- Empty / Inactive View -->
+  <div id="empty-view" hidden>
+    <div class="empty-icon"></div>
+    <p class="empty-title">No Problem Detected</p>
+    <p class="empty-desc">Open a LeetCode problem description page to start generating notes.</p>
+  </div>
+
+  <!-- Active Problem View -->
+  <div id="active-view" hidden>
+    <div class="problem-card">
+      <div class="card-header">
+        <span class="route-badge">Ready</span>
+        <span id="detected-lang" class="badge"></span>
       </div>
-
-      <button id="generate-btn">Generate Note</button>
+      <h2 id="problem-title"></h2>
+      <div class="card-footer">
+        <span id="code-lines" class="meta-item"></span>
+      </div>
     </div>
 
-    <p id="status"></p>
-    <pre id="result" hidden></pre>
-    
-    <script type="module" src="/src/main.ts"></script>
-  </body>
+    <button id="generate-btn">Generate Note</button>
+  </div>
+
+  <p id="status"></p>
+  <pre id="result" hidden></pre>
+
+  <!-- API Key Input -->
+  <details id="settings">
+    <summary>API key</summary>
+    <input id="api-key-input" type="password" placeholder="Paste your Gemini API key" autocomplete="off" />
+    <div class="settings-actions">
+      <button id="save-key-btn" type="button">Save</button>
+      <button id="clear-key-btn" type="button">Remove</button>
+    </div>
+    <p id="key-status"></p>
+  </details>
+
+  <script type="module" src="/src/main.ts"></script>
+</body>
+
 </html>

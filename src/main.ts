@@ -3,6 +3,7 @@ import { requestProblem } from "./problem";
 import type { EditorCode } from "./editorCode";
 import type { ProblemData } from "./types";
 import "./style.css";
+import { getApiKey, setApiKey, clearApiKey } from "./storage";
 
 // Types
 type StatusKind = "idle" | "loading" | "error" | "success";
@@ -47,6 +48,11 @@ async function getActiveTab(): Promise<chrome.tabs.Tab | undefined> {
   return tabs[0];
 }
 
+async function refreshKeyStatus() {
+  const key = await getApiKey();
+  keyStatus.innerText = key ? `Key saved (...${key.slice(-4)})` : "No key saved.";
+}
+
 // Grab DOM elements
 const emptyView = getElement<HTMLDivElement>("empty-view");
 const activeView = getElement<HTMLDivElement>("active-view");
@@ -54,6 +60,10 @@ const problemTitle = getElement<HTMLHeadingElement>("problem-title");
 const detectedLang = getElement<HTMLSpanElement>("detected-lang");
 const codeLines = getElement<HTMLSpanElement>("code-lines");
 const button = getElement<HTMLButtonElement>("generate-btn");
+const keyInput = getElement<HTMLInputElement>("api-key-input");
+const saveKeyBtn = getElement<HTMLButtonElement>("save-key-btn");
+const clearKeyBtn = getElement<HTMLButtonElement>("clear-key-btn");
+const keyStatus = getElement<HTMLParagraphElement>("key-status");
 
 // State cache
 let cachedProblem: ProblemData | null = null;
@@ -147,5 +157,32 @@ button.addEventListener("click", async () => {
   }
 });
 
+// Click event listener for api key save button
+saveKeyBtn.addEventListener("click", async () => {
+  const value = keyInput.value.trim();
+
+  if (!value) {
+    keyStatus.innerText = "Paste a key first.";
+    return;
+  }
+
+  try {
+    await setApiKey(value);
+    keyInput.value = "";
+    await refreshKeyStatus();
+  } catch (e) {
+    keyStatus.innerText = `Could not save: ${String(e)}`;
+  }
+});
+
+// Click event listener for api key clear button
+clearKeyBtn.addEventListener("click", async () => {
+  await clearApiKey();
+  await refreshKeyStatus();
+});
+
 // Run popup initialization
 initPopup();
+
+// Set api key status
+refreshKeyStatus();
