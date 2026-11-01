@@ -14,5 +14,6 @@
             "js": ["content.js"],
             "run_at": "document_idle"
         }
-    ]
+    ],
+    "host_permissions": ["https://generativelanguage.googleapis.com/*"]
 }

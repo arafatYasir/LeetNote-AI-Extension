@@ -4,6 +4,7 @@ import type { EditorCode } from "./editorCode";
 import type { ProblemData } from "./types";
 import "./style.css";
 import { getApiKey, setApiKey, clearApiKey } from "./storage";
+import { generateText } from "./gemini";
 
 // Types
 type StatusKind = "idle" | "loading" | "error" | "success";
@@ -57,6 +58,7 @@ async function refreshKeyStatus() {
 const emptyView = getElement<HTMLDivElement>("empty-view");
 const activeView = getElement<HTMLDivElement>("active-view");
 const problemTitle = getElement<HTMLHeadingElement>("problem-title");
+const result = getElement<HTMLPreElement>("result");
 const detectedLang = getElement<HTMLSpanElement>("detected-lang");
 const codeLines = getElement<HTMLSpanElement>("code-lines");
 const button = getElement<HTMLButtonElement>("generate-btn");
@@ -137,7 +139,7 @@ async function initPopup() {
 
 // Click event listener on the generate button
 button.addEventListener("click", async () => {
-  if (!cachedProblem || !activeTabId) {
+  if (!cachedProblem || !cachedEditor || !activeTabId) {
     setStatus("Problem data not ready.", "error");
     return;
   }
@@ -146,10 +148,17 @@ button.addEventListener("click", async () => {
   button.disabled = true;
 
   try {
-    const lines = cachedEditor && cachedEditor.code.trim() ? cachedEditor.code.split("\n").length : 0;
-    const language = cachedEditor ? cachedEditor.language : "unknown";
+    const res = await generateText("Reply with the single word: pong");
 
-    setStatus(`Problem: ${cachedProblem.title}, Language: ${language}, Lines: ${lines}`, "success");
+    if (res.ok === false) {
+      setStatus(res.error, "error");
+      return;
+    }
+
+    setStatus(`Gemini responded`, "success");
+
+    result.hidden = false;
+    result.textContent = res.text;
   } catch (e) {
     setStatus(`Error: ${String(e)}`, "error");
   } finally {

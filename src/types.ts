@@ -9,3 +9,7 @@ export type ProblemResult =
     | { ok: false; error: string; };
 
 export const GET_PROBLEM = "GET_PROBLEM";
+
+export type GeminiResult =
+    | { ok: true; text: string; }
+    | { ok: false; error: string; };
