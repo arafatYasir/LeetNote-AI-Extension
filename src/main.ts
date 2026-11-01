@@ -184,6 +184,24 @@ button.addEventListener("click", async () => {
       return;
     }
 
+    // Validate the verdict of parsed result
+    if (parsedResult.data.verdict !== "looks_correct") {
+      const verdict = parsedResult.data.verdict;
+
+      if (verdict === "not_valid_code") {
+        setStatus("Your solution is invalid", "error");
+      }
+      else setStatus("Your solution has some issues", "error");
+
+      // Display all the issues in DOM
+      if (parsedResult.data.issues.length > 0) {
+        setIssues(parsedResult.data.issues);
+        issuesEl.hidden = false;
+      }
+
+      return;
+    }
+
     setStatus("Successfully generated note!", "success");
     result.hidden = false;
     result.textContent = JSON.stringify(parsedResult.data);

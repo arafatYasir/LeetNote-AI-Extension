@@ -266,6 +266,98 @@ h1::after {
   display: none !important;
 }
 
+/* Issues List */
+#issues {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--lc-red-border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  animation: fadeIn 0.2s ease-out;
+}
+
+#issues[hidden] {
+  display: none !important;
+}
+
+/* Issues header label */
+#issues::before {
+  content: "Issues found";
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--lc-red);
+  padding-bottom: 8px;
+  margin-bottom: 2px;
+  border-bottom: 1px solid rgba(255, 55, 95, 0.12);
+}
+
+#issues li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 10px;
+  background: var(--lc-red-bg);
+  border: 1px solid rgba(255, 55, 95, 0.14);
+  border-radius: 6px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: #e8b4be;
+  word-break: break-word;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+#issues li:hover {
+  background: rgba(255, 55, 95, 0.14);
+  border-color: var(--lc-red-border);
+}
+
+/* Bullet icon for each issue */
+#issues li::before {
+  content: "";
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+  margin-top: 2px;
+  background-color: var(--lc-red);
+  opacity: 0.7;
+  mask: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12 9V13' stroke='black' stroke-width='2.5' stroke-linecap='round'/%3E%3Ccircle cx='12' cy='17' r='1' fill='black'/%3E%3Cpath d='M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat center / contain;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12 9V13' stroke='black' stroke-width='2.5' stroke-linecap='round'/%3E%3Ccircle cx='12' cy='17' r='1' fill='black'/%3E%3Cpath d='M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat center / contain;
+}
+
+/* Scrollable when many issues */
+#issues:has(li:nth-child(5)) {
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+#issues::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+#issues::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+#issues::-webkit-scrollbar-thumb {
+  background: rgba(255, 55, 95, 0.25);
+  border-radius: 4px;
+}
+
+#issues::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 55, 95, 0.4);
+}
+
 /* Custom Scrollbar */
 #result::-webkit-scrollbar {
   width: 6px;
