@@ -5,6 +5,7 @@ import type { ProblemData } from "./types";
 import "./style.css";
 import { getApiKey, setApiKey, clearApiKey } from "./storage";
 import { generateText } from "./gemini";
+import { GeneratedNoteSchema, buildUserPrompt, SYSTEM_INSTRUCTION, RESPONSE_SCHEMA } from "./prompt";
 
 // Types
 type StatusKind = "idle" | "loading" | "error" | "success";
@@ -29,6 +30,19 @@ function setStatus(message: string, kind: StatusKind) {
 
   status.innerText = message;
   status.setAttribute("data-kind", kind);
+}
+
+function setIssues(issues: string[]) {
+  // Remove previous issues
+  issuesEl.replaceChildren();
+
+  // Set new issues
+  issues.map((issue) => {
+    const li = document.createElement("li");
+    li.innerText = issue;
+
+    issuesEl.appendChild(li);
+  });
 }
 
 function isLeetCodeProblemUrl(url: string | undefined): boolean {
@@ -59,6 +73,7 @@ const emptyView = getElement<HTMLDivElement>("empty-view");
 const activeView = getElement<HTMLDivElement>("active-view");
 const problemTitle = getElement<HTMLHeadingElement>("problem-title");
 const result = getElement<HTMLPreElement>("result");
+const issuesEl = getElement<HTMLUListElement>("issues");
 const detectedLang = getElement<HTMLSpanElement>("detected-lang");
 const codeLines = getElement<HTMLSpanElement>("code-lines");
 const button = getElement<HTMLButtonElement>("generate-btn");
@@ -145,20 +160,33 @@ button.addEventListener("click", async () => {
   }
 
   setStatus("Generating...", "loading");
+  result.hidden = true;
+  issuesEl.hidden = true;
   button.disabled = true;
 
   try {
-    const res = await generateText("Reply with the single word: pong");
+    const prompt = buildUserPrompt(cachedProblem, cachedEditor);
+    const res = await generateText(prompt, {
+      systemInstruction: SYSTEM_INSTRUCTION,
+      responseSchema: RESPONSE_SCHEMA
+    });
 
     if (res.ok === false) {
       setStatus(res.error, "error");
       return;
     }
 
-    setStatus(`Gemini responded`, "success");
+    // Validate AI response with zod schema
+    const parsedResult = GeneratedNoteSchema.safeParse(JSON.parse(res.text));
+    if (!parsedResult.success) {
+      console.error("Failed to parse Gemini response:", parsedResult.error);
+      setStatus("An unexpected error occurred. Please reload the page and try again.", "error");
+      return;
+    }
 
+    setStatus("Successfully generated note!", "success");
     result.hidden = false;
-    result.textContent = res.text;
+    result.textContent = JSON.stringify(parsedResult.data);
   } catch (e) {
     setStatus(`Error: ${String(e)}`, "error");
   } finally {

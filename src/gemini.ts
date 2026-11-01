@@ -1,5 +1,5 @@
 import { getApiKey } from "./storage";
-import type { GeminiResult } from "./types";
+import type { GeminiResult, GenerateOptions } from "./types";
 
 const GEMINI_MODEL = "gemini-3.5-flash-lite";
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
@@ -30,7 +30,7 @@ function extractText(json: any): string | null {
     return text || null;
 }
 
-export async function generateText(prompt: string): Promise<GeminiResult> {
+export async function generateText(prompt: string, options: GenerateOptions = {}): Promise<GeminiResult> {
     const apiKey = await getApiKey();
 
     if (!apiKey) return { ok: false, error: 'No API key saved. Add one under "API key".' };
@@ -49,6 +49,14 @@ export async function generateText(prompt: string): Promise<GeminiResult> {
             },
             body: JSON.stringify({
                 contents: [{ role: "user", parts: [{ text: prompt }] }],
+                ...(options.systemInstruction
+                    ? { systemInstruction: { parts: [{ text: options.systemInstruction }] } }
+                    : {}
+                ),
+                ...(options.responseSchema
+                    ? { generationConfig: { responseMimeType: "application/json", responseSchema: options.responseSchema } }
+                    : {}
+                )
             }),
             signal: controller.signal
         });
