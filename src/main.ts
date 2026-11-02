@@ -5,7 +5,7 @@ import type { ProblemData } from "./types";
 import "./style.css";
 import { getApiKey, setApiKey, clearApiKey } from "./storage";
 import { generateText } from "./gemini";
-import { GeneratedNoteSchema, buildUserPrompt, SYSTEM_INSTRUCTION, RESPONSE_SCHEMA } from "./prompt";
+import { GeneratedNoteSchema, buildUserPrompt, SYSTEM_INSTRUCTION, RESPONSE_SCHEMA, type GeneratedNote } from "./prompt";
 
 // Types
 type StatusKind = "idle" | "loading" | "error" | "success";
@@ -68,11 +68,41 @@ async function refreshKeyStatus() {
   keyStatus.innerText = key ? `Key saved (...${key.slice(-4)})` : "No key saved.";
 }
 
+function renderNote(data: GeneratedNote) {
+  result.replaceChildren();
+
+  const sections = [
+    { label: "Approach", content: data.approach },
+    { label: "Time Complexity", content: data.timeComplexity },
+    { label: "Space Complexity", content: data.spaceComplexity },
+    { label: "Key Idea", content: data.keyIdea },
+  ];
+
+  sections.forEach(({ label, content }) => {
+    const section = document.createElement("div");
+    section.className = "note-section";
+
+    const title = document.createElement("h4");
+    title.className = "note-label";
+    title.innerText = label;
+
+    const paragraph = document.createElement("p");
+    paragraph.className = "note-content";
+    paragraph.innerText = content;
+
+    section.appendChild(title);
+    section.appendChild(paragraph);
+    result.appendChild(section);
+  });
+}
+
 // Grab DOM elements
 const emptyView = getElement<HTMLDivElement>("empty-view");
 const activeView = getElement<HTMLDivElement>("active-view");
 const problemTitle = getElement<HTMLHeadingElement>("problem-title");
-const result = getElement<HTMLPreElement>("result");
+const resultWrapper = getElement<HTMLDivElement>("result-wrapper");
+const result = getElement<HTMLDivElement>("result");
+const copyBtn = getElement<HTMLButtonElement>("copy-btn");
 const issuesEl = getElement<HTMLUListElement>("issues");
 const detectedLang = getElement<HTMLSpanElement>("detected-lang");
 const codeLines = getElement<HTMLSpanElement>("code-lines");
@@ -160,7 +190,7 @@ button.addEventListener("click", async () => {
   }
 
   setStatus("Generating...", "loading");
-  result.hidden = true;
+  resultWrapper.hidden = true;
   issuesEl.hidden = true;
   button.disabled = true;
 
@@ -184,7 +214,7 @@ button.addEventListener("click", async () => {
       return;
     }
 
-    // Validate the verdict of parsed result
+    // Check the verdict of parsed result
     if (parsedResult.data.verdict !== "looks_correct") {
       const verdict = parsedResult.data.verdict;
 
@@ -202,14 +232,31 @@ button.addEventListener("click", async () => {
       return;
     }
 
+    // Display the generated note contents with success status
     setStatus("Successfully generated note!", "success");
-    result.hidden = false;
-    result.textContent = JSON.stringify(parsedResult.data);
+
+    resultWrapper.hidden = false;
+    renderNote(parsedResult.data);
   } catch (e) {
     setStatus(`Error: ${String(e)}`, "error");
   } finally {
     button.disabled = false;
   }
+});
+
+// Click event listener for copy button
+copyBtn.addEventListener("click", async () => {
+  const text = result.innerText;
+  await navigator.clipboard.writeText(text);
+
+  const originalText = copyBtn.innerText;
+  copyBtn.innerText = "Copied!";
+  copyBtn.disabled = true;
+
+  setTimeout(() => {
+    copyBtn.innerText = originalText;
+    copyBtn.disabled = false;
+  }, 2000);
 });
 
 // Click event listener for api key save button
