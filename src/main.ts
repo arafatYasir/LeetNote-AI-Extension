@@ -96,6 +96,19 @@ function renderNote(data: GeneratedNote) {
   });
 }
 
+function cleanAIResponse(text: string): string {
+  // Remove markdown code blocks (```json, ```text, ```)
+  let cleaned = text.trim();
+
+  // Remove opening code block
+  cleaned = cleaned.replace(/^```(?:json|text)?\n?/i, '');
+
+  // Remove closing code block
+  cleaned = cleaned.replace(/\n?```$/, '');
+
+  return cleaned.trim();
+}
+
 // Grab DOM elements
 const emptyView = getElement<HTMLDivElement>("empty-view");
 const activeView = getElement<HTMLDivElement>("active-view");
@@ -206,8 +219,11 @@ button.addEventListener("click", async () => {
       return;
     }
 
+    // Clean markdown code blocks from AI response
+    const cleanedText = cleanAIResponse(res.text);
+
     // Validate AI response with zod schema
-    const parsedResult = GeneratedNoteSchema.safeParse(JSON.parse(res.text));
+    const parsedResult = GeneratedNoteSchema.safeParse(JSON.parse(cleanedText));
     if (!parsedResult.success) {
       console.error("Failed to parse Gemini response:", parsedResult.error);
       setStatus("An unexpected error occurred. Please reload the page and try again.", "error");
@@ -245,6 +261,8 @@ button.addEventListener("click", async () => {
 });
 
 // Click event listener for copy button
+let copyTimeoutId: ReturnType<typeof setTimeout> | null = null;
+
 copyBtn.addEventListener("click", async () => {
   const text = result.innerText;
   await navigator.clipboard.writeText(text);
@@ -253,9 +271,14 @@ copyBtn.addEventListener("click", async () => {
   copyBtn.innerText = "Copied!";
   copyBtn.disabled = true;
 
-  setTimeout(() => {
+  if (copyTimeoutId) {
+    clearTimeout(copyTimeoutId);
+  }
+
+  copyTimeoutId = setTimeout(() => {
     copyBtn.innerText = originalText;
     copyBtn.disabled = false;
+    copyTimeoutId = null;
   }, 2000);
 });
 
