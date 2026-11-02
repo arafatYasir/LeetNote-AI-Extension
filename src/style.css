@@ -273,7 +273,7 @@ h1::after {
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--lc-green);
+  color: var(--text-secondary);
 }
 
 #copy-btn {
