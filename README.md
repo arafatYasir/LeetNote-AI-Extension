@@ -24,8 +24,7 @@ Version 1.0.0. It is a personal tool and a learning project. There is no backend
 - No backend, no analytics, no telemetry.
 
 ## Demo
-
-<!-- TODO: record a short GIF of the full flow and add a popup screenshot. -->
+<img width="960" height="540" alt="leetnote_ai_extension_demo_preview" src="https://github.com/user-attachments/assets/5e38b741-f50c-4c5c-aefe-720b1813ccc5" />
 
 ![LeetNote AI generating a note on a LeetCode problem page](docs/demo.gif)
 
