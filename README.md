@@ -153,49 +153,13 @@ After every rebuild, reload the extension on `chrome://extensions` and refresh t
 
 **The Monaco reader runs in the main world.** Content scripts run in an isolated world and cannot see `window.monaco`. The popup uses `chrome.scripting.executeScript` with `world: "MAIN"` instead.
 
-**Problem extraction is defensive.** The content script runs on `https://leetcode.com/problems/*`. LeetCode is an SPA and keeps hidden tabs mounted, so the script:
-
-- waits for elements with a `MutationObserver`,
-- requires the description to be visible,
-- reads text with `innerText` and normalizes whitespace.
-
 The popup and content script talk through `chrome.runtime` messaging (`GET_PROBLEM`). The content script always replies, including on errors.
-
-**URL gate.** Only problem description pages are accepted. Editorial and submissions routes are rejected.
-
-**The AI never writes your code.** The extension inserts your original code verbatim. It uses a code fence longer than any backtick run inside the code. The model only writes the approach, key idea, complexity and a correctness verdict.
-
-**The verdict is advisory.** It is an LLM judgment. No tests are run, and it can be wrong.
-
-**Model output is untrusted.**
-
-- Responses are validated with zod.
-- Output is rendered with `textContent` and `createElement`, never `innerHTML`.
-- The problem and code are wrapped in delimiters in the prompt and described as data. This reduces prompt-injection risk. It does not eliminate it.
-
-**Failures are handled locally.**
-
-- Requests time out after 30 seconds (`AbortController`).
-- HTTP errors 400, 401, 403, 404, 429 and 5xx map to readable messages.
-- Empty or near-empty code is blocked before any API call.
 
 ## Security and privacy
 
 - The API key is stored unencrypted in `chrome.storage.local`. Anyone with access to your browser profile can read it.
 - The key is never hardcoded, never read by the content script, and sent only to Google's API.
 - On each **Generate Note** click, the extension sends the problem title, statement and your solution code to Google. Nothing else is sent. There is no analytics or telemetry.
-- This is a personal-use prototype. Do not publish it to the Chrome Web Store with a user-supplied key flow like this one. Add a backend proxy first.
-
-## Troubleshooting
-
-| Symptom | Cause | Fix |
-| --- | --- | --- |
-| "Could not reach the page" | The LeetCode tab was open before the extension was loaded or reloaded, so the content script is not injected. | Reload the extension, then refresh the LeetCode tab. |
-| 400 error | Invalid API key or malformed request. | Re-copy the key from Google AI Studio and save it again. |
-| 404 error | The configured model name is not available to your key. | Check the model name in the source against the models listed in Google AI Studio. |
-| 429 error | Gemini rate limit or quota reached. | Wait and retry, or check your quota. |
-| "Editor is empty" or similar | No code in the editor, or code too short. | Write your solution, then try again. |
-| Problem not detected | Not on a description page, or LeetCode's DOM changed. | Open the problem's Description tab. If it still fails, see Limitations. |
 
 ## Contributing
 
@@ -203,6 +167,4 @@ Issues and pull requests are welcome. Please open an issue before large changes.
 
 ## License
 
-<!-- TODO: choose a license. MIT is a reasonable default for a small personal project. -->
-
-License not yet chosen.
+This project is under the MIT license.
