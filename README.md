@@ -10,7 +10,7 @@ After solving a LeetCode problem, writing structured notes by hand is slow. Leet
 
 Open a problem, click the extension icon, then click **Generate Note**. The extension reads the problem and your current solution, asks Gemini for an analysis, and shows Markdown you can paste straight into Notion.
 
-Version 1.0.0. It is a personal tool and a learning project. There is no backend.
+**Version 1.0.0.** It is a personal tool and a learning project. There is no backend for it.
 
 ## Features
 
@@ -45,7 +45,7 @@ flowchart LR
 2. The popup injects a small reader into the page's main world to get the code from Monaco.
 3. On **Generate Note**, the popup builds a prompt and calls the Gemini API.
 4. Gemini returns structured JSON: `verdict`, `issues[]`, `approach`, `keyIdea`, `timeComplexity`, `spaceComplexity`.
-5. The JSON is validated at runtime with zod.
+5. The JSON is validated at runtime with Zod.
 6. The verdict decides what the popup shows:
 
 | Verdict | Result |
@@ -87,7 +87,7 @@ npm install
 npm run build
 ```
 
-These commands are the same on Windows cmd and macOS/Linux.
+These commands are the same on Windows CMD and macOS/Linux.
 
 For development, rebuild on change:
 
@@ -112,7 +112,7 @@ After every rebuild, reload the extension on `chrome://extensions` and refresh t
 
 ### Usage
 
-1. Open a LeetCode problem description page, for example `https://leetcode.com/problems/two-sum/`.
+1. Open a LeetCode problem description page, for example, `https://leetcode.com/problems/two-sum/`.
 2. Write or open your solution in the editor.
 3. Click the extension icon.
 4. Check the detected title, language and line count.
@@ -132,11 +132,11 @@ After every rebuild, reload the extension on `chrome://extensions` and refresh t
 ├── src/
     ├── content.ts/          # problem extraction content script
     ├── editorCode.ts/        # editor code extraction script
-    ├── gemini.ts/        # ai generation helper functions
-    ├── main.ts/        # main entry js file
+    ├── gemini.ts/        # AI generation helper functions
+    ├── main.ts/        # main entry JS file
     ├── problem.ts/        # problem info related helper function
     ├── prompt.ts/        # prompt, output & zod schema
-    ├── storage.ts/        # api key managing CRUD functions
+    ├── storage.ts/        # api key management CRUD functions
     ├── style.css/        # css styles
     └── types.ts/        # global types
 ├── .gitignore/               # screenshots and demo GIF
@@ -150,7 +150,7 @@ After every rebuild, reload the extension on `chrome://extensions` and refresh t
 
 ## Design decisions
 
-**Code comes from the Monaco model, not the DOM.** Monaco virtualizes rendering, so the DOM holds only the visible lines. In testing, a 24-line solution showed only 15 `.view-line` elements. Scraping would silently drop code. The extension reads `monaco.editor.getModels()` and uses the first model whose language is not plaintext.
+**Code comes from the Monaco model, not the DOM.** Monaco virtualises rendering, so the DOM holds only the visible lines. In testing, a 24-line solution showed only 15 `.view-line` elements. Scraping would silently drop code. The extension reads `monaco.editor.getModels()` and uses the first model whose language is not plaintext.
 
 **The Monaco reader runs in the main world.** Content scripts run in an isolated world and cannot see `window.monaco`. The popup uses `chrome.scripting.executeScript` with `world: "MAIN"` instead.
 
