@@ -2,10 +2,6 @@
 
 Turn a solved LeetCode problem into Notion-ready Markdown notes with one click.
 
-![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)
-![Manifest V3](https://img.shields.io/badge/Chrome-Manifest%20V3-4285F4?logo=googlechrome&logoColor=white)
-![Vite](https://img.shields.io/badge/Vite-646CFF?logo=vite&logoColor=white)
-
 ## Overview
 
 After solving a LeetCode problem, writing structured notes by hand is slow. LeetNote AI is a Chrome extension that does it for you.
