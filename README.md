@@ -201,24 +201,6 @@ The popup and content script talk through `chrome.runtime` messaging (`GET_PROBL
 | "Editor is empty" or similar | No code in the editor, or code too short. | Write your solution, then try again. |
 | Problem not detected | Not on a description page, or LeetCode's DOM changed. | Open the problem's Description tab. If it still fails, see Limitations. |
 
-## Limitations and roadmap
-
-Limitations:
-
-- Depends on LeetCode's current DOM (the heading link and `data-track-load="description_content"`) and on `window.monaco` being exposed. LeetCode changes may break extraction.
-- Works on `leetcode.com` description pages only.
-- Uses the first non-plaintext Monaco model.
-- Closing the popup mid-request cancels it. There is no history or caching of past notes.
-- Verdict accuracy is not guaranteed.
-- There are no automated tests yet.
-
-Ideas:
-
-- Backend proxy so the key is not stored in the browser
-- Notes history
-- Other LeetCode domains
-- Automated tests
-
 ## Contributing
 
 Issues and pull requests are welcome. Please open an issue before large changes. Keep new permissions to a minimum and explain any you add.
@@ -228,7 +210,3 @@ Issues and pull requests are welcome. Please open an issue before large changes.
 <!-- TODO: choose a license. MIT is a reasonable default for a small personal project. -->
 
 License not yet chosen.
-
-## Author
-
-Built by Arafat, a full-stack developer (MERN).
