@@ -1,3 +1,5 @@
+<img width="128" height="128" alt="LeetNote AI Extension Logo" src="https://github.com/user-attachments/assets/11316ee7-ae3a-4bcc-81a2-a3f15fadf2b2" />
+
 # LeetNote AI
 
 Turn a solved LeetCode problem into Notion-ready Markdown notes with one click.
